@@ -1,0 +1,206 @@
+/* =========================
+   Profile Page – 3-Color Theme (NAMESPACED)
+   ========================= */
+
+/* 1) Scope theme hanya untuk halaman Profile */
+.profile-page{
+  --page-bg: #fbf7e8;      /* krem utama (background) */
+  --ink-main: #1f2850;     /* teks judul/navy gelap */
+  --ink-muted: #7b684b;    /* teks sekunder hangat */
+
+  --navy: #1f2850;         /* kartu riwayat */
+  --navy-border: #12172f;
+  --gold: #f0b35a;         /* aksen garis & tombol */
+  --gold-2:#f6d08a;
+
+  --maroon: #6b0a00;       /* kartu wallet */
+  --maroon-ink: #ffe9cf;   /* teks pada wallet */
+
+  --cream-card: #fff3db;   /* kartu profil */
+  --cream-border: #e6d6b6;
+
+  background: var(--page-bg) !important;
+  color: var(--ink-main);
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* ===== Header ===== */
+.profile-page .content{ padding: 8px 6px 30px 6px; color: var(--ink-main); }
+.profile-page .header{ display:flex; align-items:center; gap:14px; margin-bottom:18px; }
+.profile-page .header h1{ margin:0; color:var(--ink-main); font-weight:800; letter-spacing:.5px; }
+.profile-page .brand-ticket{ height:36px; width:auto; object-fit:contain; filter: drop-shadow(0 1px 0 #000); }
+
+/* ===== Sidebar mini ===== */
+.profile-page .mini-sidebar{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+
+.profile-page .ticket-badge{
+  width:80px; height:80px; border-radius:14px;
+  background: var(--gold);
+  display:grid; place-items:center; font-size:28px;
+  box-shadow: inset 0 4px 0 #df9e2e, 0 10px 24px rgba(0,0,0,.18);
+}
+
+.profile-page .mini-nav{
+  width:92px; background:#f2c368;
+  border:1px solid rgba(0,0,0,.12);
+  border-radius:12px; padding:10px 8px; display:grid; gap:8px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.1);
+}
+.profile-page .mini-nav a,
+.profile-page .mini-nav .link-btn{
+  display:block; text-decoration:none; text-align:center; cursor:pointer;
+  color:#6b2a00; font-size:12px; font-weight:600; letter-spacing:.2px;
+  padding:10px 0; border-radius:10px;
+  background: rgba(255,255,255,.35); border:1px solid rgba(255,255,255,.5);
+  transition: transform .05s ease, background .2s ease;
+}
+.profile-page .mini-nav a:hover,
+.profile-page .mini-nav .link-btn:hover{ transform: translateY(-1px); }
+.profile-page .mini-nav a.active{ background:#fff; color:#6b2a00; border-color:#fff; font-weight:800; }
+
+/* ===== Grid konten ===== */
+.profile-page .grid{
+  display:grid;
+  grid-template-columns: 340px 1fr;
+  grid-auto-rows:min-content;
+  gap:22px 24px;
+}
+
+/* ===== Kartu profil (krem) ===== */
+.profile-page .profile-card{
+  background: var(--cream-card);
+  border:1.5px solid var(--cream-border);
+  border-radius:16px; padding:18px;
+  display:grid; gap:12px; align-content:start;
+  color:#3b2a15; box-shadow:0 14px 30px rgba(0,0,0,.12);
+}
+
+/* ===== Avatar (warna #F4F1DE & center tepat) ===== */
+.profile-page .avatar{
+  height: 180px;
+  border-radius: 16px;
+  background: var(--maroon);
+  position: relative;
+  overflow: hidden;
+  color: #F4F1DE; /* currentColor untuk SVG */
+}
+
+/* Foto user */
+.profile-page .avatar-img{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 72%;
+  height: auto;
+  max-height: 72%;
+  object-fit: contain;
+  display: block;
+}
+
+/* SVG default (raw) */
+.profile-page .avatar-svg{
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 72%;
+  height: 72%;
+}
+.profile-page .avatar-svg svg{
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.profile-page .avatar-svg svg,
+.profile-page .avatar-svg svg *{
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* Nonaktifkan pseudo-element blob jika ada aturan lama */
+.profile-page .avatar::before,
+.profile-page .avatar::after{ content:none !important; display:none !important; }
+
+/* ===== Meta ===== */
+.profile-page .profile-meta h3{ margin:6px 0 2px; color:#3b2a15; font-weight:800; }
+.profile-page .addr{ margin:0; color:var(--ink-muted); font-size:12px; }
+
+/* ===== Kartu riwayat (navy + emas) ===== */
+.profile-page .history-card{
+  background: var(--navy);
+  color:#dee6ff;
+  border-radius:12px; padding:16px 0 8px;
+  border:1px solid var(--navy-border);
+  box-shadow:0 14px 30px rgba(0,0,0,.2);
+}
+.profile-page .history-card h2{
+  color: var(--gold);
+  margin: 6px 12px 8px; font-weight:800; letter-spacing:.2px;
+}
+
+.profile-page .table{ width:100%; display:grid; gap:6px; }
+
+.profile-page .thead{
+  display:grid;
+  grid-template-columns: 1.6fr 1fr .7fr .9fr .5fr;
+  gap:10px; align-items:center;
+  color: var(--gold);
+  border-bottom: 2px solid var(--gold);
+  padding: 10px 12px 8px;
+  font-weight:700; letter-spacing:.2px;
+}
+
+.profile-page .trow{
+  display:grid;
+  grid-template-columns: 1.6fr 1fr .7fr .9fr .5fr;
+  gap:10px; align-items:center;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+  font-size:14px;
+}
+.profile-page .trow:last-child{ border-bottom: 2px solid var(--gold); }
+
+.profile-page .detail-btn{
+  padding:6px 10px; border-radius:6px;
+  border:1px solid var(--gold); background: var(--gold-2);
+  color:#1c233d; font-weight:700; cursor:pointer;
+}
+
+/* ===== Kartu wallet (maroon) ===== */
+.profile-page .wallet-card{
+  grid-column: 1 / span 2;
+  background: var(--maroon);
+  border-radius:12px; padding:18px 22px 24px;
+  color: var(--maroon-ink);
+  position:relative; box-shadow:0 14px 30px rgba(0,0,0,.2);
+}
+.profile-page .wallet-card h3{ margin:0 0 10px; font-weight:800; }
+.profile-page .amount{
+  font-size: clamp(28px, 6vw, 54px); font-weight:800; letter-spacing:1px;
+  margin:4px 0 12px;
+}
+.profile-page .acc{ margin:0; opacity:.95; }
+
+.profile-page .copy{
+  margin-left:8px; padding:3px 8px; border-radius:6px;
+  border:1px solid #ffd7ae; background:#ffd7ae; color:#3b0d05;
+  font-weight:700; cursor:pointer;
+}
+.profile-page .copy:disabled{ opacity:.6; cursor:not-allowed; }
+
+.profile-page .topup{
+  position:absolute; right:16px; bottom:16px;
+  font-weight:800; border:1px solid #ffd7ae; background:#ffd7ae; color:#3b0d05;
+  border-radius:8px; padding:8px 12px; cursor:pointer;
+}
+
+/* ===== Responsif ===== */
+@media (max-width: 980px){
+  .profile-page .grid{ grid-template-columns: 1fr; }
+  .profile-page .wallet-card{ grid-column: 1; }
+}

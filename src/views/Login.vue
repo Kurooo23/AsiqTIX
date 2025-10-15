@@ -22,7 +22,6 @@
           <span>Wallet Terhubung</span>
         </div>
         <div class="wallet-address">{{ shortenAddress(walletAddress) }}</div>
-        <div class="wallet-full" :title="walletAddress">{{ walletAddress }}</div>
       </div>
 
       <!-- Tombol Connect / Masuk -->
