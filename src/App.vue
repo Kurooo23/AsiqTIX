@@ -16,10 +16,11 @@ html, body, #app {
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
+#app { max-width: none !important; margin: 0 !important; padding: 0 !important; }
 /* Hilangkan scroll atau ruang putih di kanan */
 body {
-  background-color: #000;
-  overflow: hidden;
+  background-color: #0b0d12;
+  color: #e6e8ef;
+  overflow: auto;
 }
 </style>
