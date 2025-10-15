@@ -6,11 +6,11 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   plugins: [vue(), vueDevTools()],
   server: {
-    port: 5173,                 // ← pakai 5173 untuk Vite
+    port: 5173,
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001', // backend
+        target: 'http://localhost:3001',
         changeOrigin: true,
       },
     },
