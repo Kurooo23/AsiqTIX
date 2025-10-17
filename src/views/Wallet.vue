@@ -1,10 +1,10 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import '@/assets/wallet.css' // stylesheet terpisah
+import '@/assets/wallet.css'
 
-const route = useRoute()                          
-const router = useRouter()   
+const route = useRoute()
+const router = useRouter()
 
 /* ======= Timers (polling) ======= */
 const priceTimer = ref/** @type {number|null} */(null)
@@ -16,7 +16,6 @@ function handleVis(){ tabActive.value = !document.hidden }
 const sidebarOpen = ref(false)
 function toggleSidebar(){
   sidebarOpen.value = !sidebarOpen.value
-  emit('toggleSidebar', sidebarOpen.value) // tetap inform parent (opsional)
 }
 function closeSidebar(){ sidebarOpen.value = false }
 
@@ -35,7 +34,6 @@ const props = defineProps({
     ])
   }
 })
-const emit = defineEmits(['toggleSidebar','topup'])
 
 /* =========================
    MetaMask state
@@ -195,52 +193,85 @@ onUnmounted(() => {
   if (balTimer.value)   clearInterval(balTimer.value)
   document.removeEventListener('visibilitychange', handleVis)
 })
+
+/* =========================
+   TOP UP (sama persis dengan Profile.vue)
+   ========================= */
+const BUY_URL = 'https://app.metamask.io/buy?metamaskEntry=ext_buy_sell_button&chainId=137&metametricsId=0x1d179a3676bba5dc16132d5626f1a7a0186c84eae60d6a5945ba734692e270cc&metricsEnabled=true&marketingEnabled=true'
+const BUY_URL_FALLBACK = 'https://metamask.app.link/buy?chainId=137'
+
+function isMobile(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+function hasMetaMask(){
+  return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined'
+}
+async function ensurePolygon(){
+  try{
+    const current = await window.ethereum.request({ method: 'eth_chainId' })
+    if (current?.toLowerCase() === '0x89') return
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0x89' }],
+    })
+  }catch(e){
+    // Abaikan; user bisa lanjut ke halaman Buy MetaMask
+  }
+}
+async function topUp(){
+  if (hasMetaMask() && !isMobile()){
+    try { await ensurePolygon() } catch {}
+    window.open(BUY_URL, '_blank', 'noopener,noreferrer')
+  } else {
+    window.open(BUY_URL_FALLBACK, '_blank', 'noopener,noreferrer')
+  }
+}
 </script>
 
 <template>
-  <main class="wallet-page" tabindex="-1">
+  <!-- Tambah class has-sb saat sidebar terbuka (opsional untuk padding) -->
+  <main class="wallet-page" :class="{ 'has-sb': sidebarOpen }" tabindex="-1">
     <!-- Topbar -->
     <header class="topbar">
-      <button class="hamburger" type="button" aria-label="Toggle sidebar"
-              @click="toggleSidebar">
-        <span></span><span></span><span></span>
-      </button>
-
       <div class="brand">
         <img src="/logo.png" alt="Brand" />
       </div>
 
       <h1 class="title">Wallet</h1>
-      <div class="actions"></div>
+
+      <div class="actions">
+        <button class="hamburger" type="button" aria-label="Toggle sidebar" @click="toggleSidebar">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
     </header>
 
-    <!-- Sidebar Off-canvas -->
+    <!-- Sidebar Off-canvas (KANAN) -->
     <transition name="sb">
-  <aside v-if="sidebarOpen" class="sb-card" role="dialog" aria-modal="true">
-    <nav class="sb-menu">
-      <!-- Pakai RouterLink, tutup sidebar saat klik -->
-      <RouterLink to="/home" class="sb-item"
-                  :class="{ active: route.name === 'home' }"
-                  @click="closeSidebar">home</RouterLink>
-      <RouterLink to="/profile" class="sb-item"
-                  :class="{ active: route.name === 'profile' }"
-                  @click="closeSidebar">profile</RouterLink>
-      <RouterLink to="/history" class="sb-item"
-                  :class="{ active: route.name === 'history' }"
-                  @click="closeSidebar">History</RouterLink>
-      <RouterLink to="/wallet" class="sb-item"
-                  :class="{ active: route.name === 'wallet' }"
-                  @click="closeSidebar">wallet</RouterLink>
+      <aside v-if="sidebarOpen" class="sb-card" role="dialog" aria-modal="true">
+        <nav class="sb-menu">
+          <RouterLink to="/home" class="sb-item"
+                      :class="{ active: route.name === 'home' }"
+                      @click="closeSidebar">home</RouterLink>
 
+          <RouterLink to="/profile" class="sb-item"
+                      :class="{ active: route.name === 'profile' }"
+                      @click="closeSidebar">profile</RouterLink>
 
-      <!-- Contoh ke halaman logout/aksi -->
-      <RouterLink to="/logout" class="sb-item sb-danger"
-                  :class="{ active: route.name === 'logout' }"
-                  @click="closeSidebar">logout</RouterLink>
-      <!-- Atau jika logout adalah aksi, gunakan @click="handleLogout()" -->
-    </nav>
-  </aside>
-</transition>
+          <RouterLink to="/wallet" class="sb-item"
+                      :class="{ active: route.name === 'wallet' }"
+                      @click="closeSidebar">wallet</RouterLink>
+
+          <RouterLink to="/history" class="sb-item"
+                      :class="{ active: route.name === 'history' }"
+                      @click="closeSidebar">History</RouterLink>
+
+          <RouterLink to="/logout" class="sb-item sb-danger"
+                      :class="{ active: route.name === 'logout' }"
+                      @click="closeSidebar">logout</RouterLink>
+        </nav>
+      </aside>
+    </transition>
     <div v-if="sidebarOpen" class="sb-backdrop" @click="closeSidebar" aria-hidden="true"></div>
 
     <!-- Content -->
@@ -257,7 +288,8 @@ onUnmounted(() => {
           </div>
 
           <div class="btns">
-            <button class="btn" type="button" @click="emit('topup')">TOP UP</button>
+            <!-- TOP UP pakai handler baru -->
+            <button class="btn" type="button" @click="topUp">TOP UP</button>
             <button class="btn" type="button" @click="connectAndLoad" :disabled="loading">Refresh</button>
             <button v-if="hasMM && !isPolygon" class="btn ghost" type="button" @click="switchToPolygon">
               Switch to Polygon

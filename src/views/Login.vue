@@ -18,7 +18,7 @@
       <!-- Wallet Info -->
       <div v-if="walletAddress" class="wallet-info">
         <div class="wallet-label">
-          <IconMetamask :size="18" :rounded="false" />
+          <img :src="metaMaskIcon" class="mm-ico" alt="MetaMask" />
           <span>Wallet Terhubung</span>
         </div>
         <div class="wallet-address">{{ shortenAddress(walletAddress) }}</div>
@@ -35,7 +35,7 @@
           ⏳ Menghubungkan...
         </template>
         <template v-else>
-          <IconMetamask :size="22" />
+          <img :src="metaMaskIcon" class="mm-ico mm-ico--btn" alt="MetaMask" />
           <span class="btn-label">Hubungkan MetaMask</span>
         </template>
       </button>
@@ -65,7 +65,7 @@ import { ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { getAddress } from 'ethers'
 import { useMetamask } from '@/composables/useMetamask'
-import IconMetamask from '@/components/icons/IconMetamask.vue'
+import metaMaskIcon from '@/assets/MetaMask.png'   // ⟵ gunakan PNG
 
 /** Router */
 const router = useRouter()
@@ -96,14 +96,11 @@ function shortenAddress(address) {
   return `${address.slice(0, 6)}...${address.slice(-4)}`
 }
 
-/** Helper fetch JSON via Vite proxy (WAJIB path '/api/...') */
+/** Helper fetch JSON via Vite proxy */
 async function fetchJSON(path, options) {
-  // 1) Pastikan path benar agar Vite mem-proxy ke backend
   if (typeof path !== 'string' || !path.startsWith('/api')) {
     throw new Error(`Path harus diawali '/api'. Diterima: ${String(path)}`)
   }
-
-  // 2) Timeout agar request tidak menggantung selamanya
   const timeoutMs = 15000
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
@@ -111,7 +108,6 @@ async function fetchJSON(path, options) {
   let res, text
   try {
     res = await fetch(path, {
-      // gunakan path relatif agar lewat vite proxy (lihat vite.config.js)
       method: (options && options.method) || 'GET',
       headers: (options && options.headers) || {},
       body: (options && options.body) || undefined,
@@ -120,7 +116,6 @@ async function fetchJSON(path, options) {
     })
   } catch (err) {
     clearTimeout(timer)
-    // Network-level error (backend mati, port salah, DNS, mixed content, dll.)
     throw new Error(
       `Tidak dapat terhubung ke backend: ${err?.name === 'AbortError'
         ? `Timeout ${timeoutMs}ms`
@@ -128,34 +123,18 @@ async function fetchJSON(path, options) {
     )
   }
 
-  try {
-    text = await res.text()
-  } catch (err) {
-    clearTimeout(timer)
-    throw new Error(`Gagal membaca respons backend: ${err?.message || err}`)
-  } finally {
-    clearTimeout(timer)
-  }
+  try { text = await res.text() } finally { clearTimeout(timer) }
 
-  // 3) Coba parse JSON bila ada isi
   let data = {}
-  if (text && text.trim().length > 0) {
-    try {
-      data = JSON.parse(text)
-    } catch {
-      // bukan JSON — tetap simpan sebagai message mentah
-      data = { message: text }
-    }
+  if (text && text.trim()) {
+    try { data = JSON.parse(text) } catch { data = { message: text } }
   }
-
-  // 4) Tangani error HTTP dengan pesan yang informatif
   if (!res.ok) {
     const snippet = (data?.message || text || '').toString().slice(0, 200)
     const where = res.url || '(via Vite proxy)'
     const statusLine = `${res.status} ${res.statusText || ''}`.trim()
     throw new Error(`Request gagal (${statusLine}) ke ${where}: ${snippet}`)
   }
-
   return data
 }
 
@@ -191,8 +170,6 @@ async function loginAccount() {
     showStatus('Silakan hubungkan wallet terlebih dahulu!', 'error')
     return
   }
-
-  // Normalisasi ke checksum EIP-55
   let addr
   try { addr = getAddress(walletAddress.value) }
   catch { showStatus('Alamat wallet tidak valid.', 'error'); return }
@@ -203,15 +180,11 @@ async function loginAccount() {
       showStatus('MetaMask tidak terdeteksi pada browser ini.', 'error')
       return
     }
-
-    // 1) chainId dari MetaMask
     const hexChainId = await window.ethereum.request({ method: 'eth_chainId' })
     const chainId = parseInt(hexChainId, 16)
 
-    // 2) Ambil nonce dari backend (LEWAT PROXY)
     const { nonce } = await fetchJSON(`/api/nonce?address=${addr}`)
 
-    // 3) Compose SIWE message
     const domain   = window.location.host
     const origin   = window.location.origin
     const issuedAt = new Date().toISOString()
@@ -228,20 +201,17 @@ Chain ID: ${chainId}
 Nonce: ${nonce}
 Issued At: ${issuedAt}`
 
-    // 4) Tanda tangan dengan MetaMask
     const signature = await window.ethereum.request({
       method: 'personal_sign',
       params: [message, addr],
     })
 
-    // 5) Verifikasi ke backend (LEWAT PROXY)
     const data = await fetchJSON('/api/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, signature }),
     })
 
-    // 6) Simpan kredensial ringan
     localStorage.setItem('walletAddress', addr)
     if (data?.token) localStorage.setItem('auth_token', data.token)
 
@@ -315,7 +285,7 @@ h1 { color: #1f2937; margin-bottom: 0.5rem; font-size: 1.8rem; }
   margin-bottom: 0.6rem;
 }
 
-/* Tombol MetaMask: gradient + IconMetamask */
+/* Tombol MetaMask */
 .btn-metamask {
   background: linear-gradient(135deg, #f6851b 0%, #e2761b 100%);
   color: #fff;
@@ -349,4 +319,8 @@ h1 { color: #1f2937; margin-bottom: 0.5rem; font-size: 1.8rem; }
 .metamask-warning p { margin-bottom: 0.5rem; font-weight: 600; }
 .install-link { display: inline-block; padding: 0.5rem 1rem; background-color: #f6851b; color: #fff; text-decoration: none; border-radius: 6px; font-size: 0.9rem; transition: background 0.2s; }
 .install-link:hover { background-color: #e2761b; }
+
+/* ====== Ikon MetaMask (PNG) ====== */
+.mm-ico{ width: 18px; height: 18px; object-fit: contain; display:inline-block; }
+.mm-ico--btn{ width: 22px; height: 22px; }
 </style>

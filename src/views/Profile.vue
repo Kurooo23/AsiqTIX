@@ -6,21 +6,22 @@ import { useConfirmLogout } from '@/composables/useConfirmLogout'
 import { useMetamask } from '@/composables/useMetamask'
 import profileSvgRaw from '@/assets/profile.svg?raw'
 
-/* Route & nav state */
+/* ------- Route & nav state ------- */
 const route = useRoute()
 const router = useRouter()
 const isActive = (path) => route.path === path
 
-/* Drawer sidebar (kanan) */
+/* ------- Drawer sidebar (kanan) ------- */
 const sidebarOpen = ref(false)
 const toggleSidebar = () => (sidebarOpen.value = !sidebarOpen.value)
 const closeSidebar  = () => (sidebarOpen.value = false)
 watch(() => route.fullPath, closeSidebar)
+
 const onEsc = (e) => { if (e.key === 'Escape') closeSidebar() }
 onMounted(() => window.addEventListener('keydown', onEsc))
 onBeforeUnmount(() => window.removeEventListener('keydown', onEsc))
 
-/* Wallet (MetaMask) */
+/* ------- Wallet (MetaMask) ------- */
 const { account } = useMetamask()
 const walletAddress = computed(() => account.value || '')
 const short = (a) => (a ? `${a.slice(0,6)}...${a.slice(-4)}` : '')
@@ -30,11 +31,11 @@ const copyAddr = async () => {
   alert('Wallet address copied!')
 }
 
-/* Logout confirm */
+/* ------- Logout confirm ------- */
 const { confirmLogout } = useConfirmLogout()
 const onLogout = async () => { await confirmLogout({ redirectTo: '/login' }) }
 
-/* Demo data UI */
+/* ------- Demo data UI ------- */
 const user = ref({ name: 'Your Name', avatarUrl: '' })
 const purchases = ref([
   { id: 1, concert: 'Hindia in Balikpapan', date: '05/06/2025', price: '100 MATIC', status: 'Successful' },
@@ -43,17 +44,52 @@ const purchases = ref([
 ])
 const wallet = ref({ balance: 8, symbol: 'MATIC' })
 
-/* Avatar: foto jika ada, fallback SVG */
+/* ------- Avatar (fallback SVG) ------- */
 const hasPhoto = computed(() => !!user.value.avatarUrl)
 const profileSvg = computed(() => profileSvgRaw)
 
+/* ------- UI actions ------- */
 const openDetail = (row) => alert(`Detail transaksi: ${row.concert} (${row.date})`)
-const topUp = () => alert('Top up wallet…')
+
+/* =========================
+   TOP UP (MetaMask Buy)
+   ========================= */
+const BUY_URL = 'https://app.metamask.io/buy?metamaskEntry=ext_buy_sell_button&chainId=137&metametricsId=0x1d179a3676bba5dc16132d5626f1a7a0186c84eae60d6a5945ba734692e270cc&metricsEnabled=true&marketingEnabled=true'
+const BUY_URL_FALLBACK = 'https://metamask.app.link/buy?chainId=137'
+
+function isMobile(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+function hasMetaMask(){
+  return typeof window !== 'undefined' && typeof window.ethereum !== 'undefined'
+}
+async function ensurePolygon(){
+  try{
+    const chainId = await window.ethereum.request({ method: 'eth_chainId' })
+    if (chainId?.toLowerCase() === '0x89') return
+    await window.ethereum.request({
+      method: 'wallet_switchEthereumChain',
+      params: [{ chainId: '0x89' }], // Polygon mainnet
+    })
+  }catch(e){
+    // User cancel / network not added — we still proceed to the buy page.
+  }
+}
+async function topUp(){
+  // Desktop + extension available → try switch to Polygon, then open Buy
+  if (hasMetaMask() && !isMobile()){
+    try { await ensurePolygon() } catch {}
+    window.open(BUY_URL, '_blank', 'noopener,noreferrer')
+    return
+  }
+  // Mobile / no extension → open deep-link fallback
+  window.open(BUY_URL_FALLBACK, '_blank', 'noopener,noreferrer')
+}
 </script>
 
 <template>
   <div class="profile-page">
-    <!-- Header -->
+    <!-- Header (ikon hamburger di kanan atas) -->
     <div class="content">
       <div class="header">
         <button
@@ -79,17 +115,18 @@ const topUp = () => alert('Top up wallet…')
       <div class="drawer-backdrop" @click="closeSidebar"></div>
 
       <nav class="drawer-panel" @click.stop>
+        <div class="ticket-badge" aria-hidden="true"><span>🎟️</span></div>
         <div class="mini-nav">
           <RouterLink :class="{ active: isActive('/home') }" to="/home" @click="closeSidebar">home</RouterLink>
           <RouterLink :class="{ active: isActive('/profile') }" to="/profile" @click="closeSidebar">profile</RouterLink>
           <RouterLink :class="{ active: isActive('/wallet') }" to="/wallet" @click="closeSidebar">wallet</RouterLink>
-          <RouterLink :class="{ active: isActive('/transactions') }" to="/transactions" @click="closeSidebar">history</RouterLink>
+          <RouterLink :class="{ active: isActive('/history') }" to="/history" @click="closeSidebar">history</RouterLink>
           <button class="link-btn" @click="onLogout">log out</button>
         </div>
       </nav>
     </div>
 
-    <!-- Grid Konten -->
+    <!-- GRID KONTEN -->
     <div class="grid">
       <!-- Kartu Profil -->
       <section class="profile-card">

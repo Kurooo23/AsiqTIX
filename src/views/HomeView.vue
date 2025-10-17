@@ -3,6 +3,10 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { useRoute, RouterLink, useRouter } from 'vue-router'
 import { useMetamask } from '@/composables/useMetamask'
 
+import imgFeast from '@/assets/Feast_Foto.jpg'
+import imgSO7 from '@/assets/SO7.jpeg'
+import imgGigi from '@/assets/Band-Gigi-2018.jpg'
+
 
 /* Route & sidebar */
 const route = useRoute()
@@ -25,9 +29,9 @@ onMounted(async () => {
   loading.value = true
   try {
     events.value = [
-      { id: 1, title: 'FEAST',       location: 'Donna, Balikpapan',            date: '2025-11-10', desc: 'Tur album terbaru.', image: '/hero_fallback.jpg' },
-      { id: 2, title: 'SHEILA ON 7', location: 'Kotaraya Hall, Yogyakarta',    date: '2025-11-20', desc: 'Setlist klasik.',     image: '/hero_fallback.jpg' },
-      { id: 3, title: 'GIGI',        location: 'Manakala Hall, Bandung',       date: '2026-01-26', desc: 'Format full band.',   image: '/hero_fallback.jpg' },
+      { id: 1, title: 'FEAST',       location: 'Donna, Balikpapan',            date: '2025-11-10', desc: 'Tur album terbaru.', image: imgFeast },
+      { id: 2, title: 'SHEILA ON 7', location: 'Kotaraya Hall, Yogyakarta',    date: '2025-11-20', desc: 'Setlist klasik.',    image: imgSO7 },
+      { id: 3, title: 'GIGI',        location: 'Manakala Hall, Bandung',       date: '2026-01-26', desc: 'Format full band.',  image: imgGigi },
     ]
   } finally { loading.value = false }
 })
@@ -84,7 +88,7 @@ function buyTicket(ev){ alert(`Beli: ${ev.title}`) }
           <RouterLink class="sb-item" :class="{active: isActive('/home')}" to="/home" @click="closeSidebar">Home</RouterLink>
           <RouterLink class="sb-item" :class="{active: isActive('/profile')}" to="/profile" @click="closeSidebar">Profile</RouterLink>
           <RouterLink class="sb-item" :class="{active: isActive('/wallet')}" to="/wallet" @click="closeSidebar">Wallet</RouterLink>
-          <RouterLink class="sb-item" :class="{active: isActive('/transactions')}" to="/transactions" @click="closeSidebar">History</RouterLink>
+          <RouterLink class="sb-item" :class="{active: isActive('/history')}" to="/history" @click="closeSidebar">History</RouterLink>
           <RouterLink class="sb-item sb-danger" to="/logout" @click="closeSidebar">Log out</RouterLink>
         </nav>
       </aside>
